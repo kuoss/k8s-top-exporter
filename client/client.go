@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -17,8 +18,6 @@ type Client struct {
 }
 
 func NewClient() (*Client, error) {
-	// kubeconfig := os.Getenv("HOME") + "/.kube/config"
-	// config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err

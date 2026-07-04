@@ -1,33 +1,24 @@
 package collector
 
 import (
-	topclient "github.com/jmnote/kubectl-top-exporter/client"
-	"github.com/prometheus/client_golang/prometheus"
 	"log"
+
+	topclient "github.com/jmnote/k8s-top-exporter/client"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type collector struct {
 	topclient *topclient.Client
 
-	// nodeCPUCoresDesc    *prometheus.Desc
-	// nodeCPURatioDesc    *prometheus.Desc
-	// nodeMemoryBytesDesc *prometheus.Desc
-	// nodeMemoryRatioDesc *prometheus.Desc
+	nodeCPUCoresDesc               *prometheus.Desc
+	nodeMemoryBytesDesc            *prometheus.Desc
+	nodeAllocatableCPUCoresDesc    *prometheus.Desc
+	nodeAllocatableMemoryBytesDesc *prometheus.Desc
 
-	// podCPUCoresDesc          *prometheus.Desc
-	// podMemoryBytesDesc       *prometheus.Desc
-	// containerCPUCoresDesc    *prometheus.Desc
-	// containerMemoryBytesDesc *prometheus.Desc
-
-	nodeCPUMillicoresDesc   *prometheus.Desc
-	nodeCPUPercentDesc      *prometheus.Desc
-	nodeMemoryMibibytesDesc *prometheus.Desc
-	nodeMemoryPercentDesc   *prometheus.Desc
-
-	podCPUMillicoresDesc         *prometheus.Desc
-	podMemoryMibibytesDesc       *prometheus.Desc
-	containerCPUMillicoresDesc   *prometheus.Desc
-	containerMemoryMibibytesDesc *prometheus.Desc
+	podCPUCoresDesc          *prometheus.Desc
+	podMemoryBytesDesc       *prometheus.Desc
+	containerCPUCoresDesc    *prometheus.Desc
+	containerMemoryBytesDesc *prometheus.Desc
 }
 
 func NewCollector() (*collector, error) {
@@ -38,25 +29,15 @@ func NewCollector() (*collector, error) {
 	return &collector{
 		topclient: topclient,
 
-		// nodeCPUCoresDesc:    prometheus.NewDesc("kubectl_top_node_cpu_cores", "kubectl top node; CPU(cores)", []string{"name"}, nil),
-		// nodeCPURatioDesc:    prometheus.NewDesc("kubectl_top_node_cpu_ratio", "kubectl top node; CPU%", []string{"name"}, nil),
-		// nodeMemoryBytesDesc: prometheus.NewDesc("kubectl_top_node_memory_bytes", "kubectl top node; MEMORY(bytes)", []string{"name"}, nil),
-		// nodeMemoryRatioDesc: prometheus.NewDesc("kubectl_top_node_memory_ratio", "kubectl top node; MEMORY%", []string{"name"}, nil),
+		nodeCPUCoresDesc:               prometheus.NewDesc("k8s_top_node_cpu_cores", "CPU usage of the node in cores.", []string{"name"}, nil),
+		nodeMemoryBytesDesc:            prometheus.NewDesc("k8s_top_node_memory_bytes", "Memory usage of the node in bytes.", []string{"name"}, nil),
+		nodeAllocatableCPUCoresDesc:    prometheus.NewDesc("k8s_top_node_allocatable_cpu_cores", "Allocatable CPU of the node in cores.", []string{"name"}, nil),
+		nodeAllocatableMemoryBytesDesc: prometheus.NewDesc("k8s_top_node_allocatable_memory_bytes", "Allocatable memory of the node in bytes.", []string{"name"}, nil),
 
-		// podCPUCoresDesc:          prometheus.NewDesc("kubectl_top_pod_cpu_cores", "kubectl top pod -A; CPU(cores)", []string{"namespace", "name"}, nil),
-		// podMemoryBytesDesc:       prometheus.NewDesc("kubectl_top_pod_memory_bytes", "kubectl top pod; -A MEMORY(bytes)", []string{"namespace", "name"}, nil),
-		// containerCPUCoresDesc:    prometheus.NewDesc("kubectl_top_pod_cpu_cores", "kubectl top pod -A --containers; CPU(cores)", []string{"namespace", "pod", "name"}, nil),
-		// containerMemoryBytesDesc: prometheus.NewDesc("kubectl_top_pod_memory_bytes", "kubectl top pod -A --containers; MEMORY(bytes)", []string{"namespace", "pod", "name"}, nil),
-
-		nodeCPUMillicoresDesc:   prometheus.NewDesc("kubectl_top_node_cpu_millicores", "kubectl top node; CPU(cores)", []string{"name"}, nil),
-		nodeCPUPercentDesc:      prometheus.NewDesc("kubectl_top_node_cpu_percent", "kubectl top node; CPU%", []string{"name"}, nil),
-		nodeMemoryMibibytesDesc: prometheus.NewDesc("kubectl_top_node_memory_mibibytes", "kubectl top node; MEMORY(bytes)", []string{"name"}, nil),
-		nodeMemoryPercentDesc:   prometheus.NewDesc("kubectl_top_node_memory_percent", "kubectl top node; MEMORY%", []string{"name"}, nil),
-
-		podCPUMillicoresDesc:         prometheus.NewDesc("kubectl_top_pod_cpu_millicores", "kubectl top pod -A; CPU(cores)", []string{"namespace", "name"}, nil),
-		podMemoryMibibytesDesc:       prometheus.NewDesc("kubectl_top_pod_memory_mibibytes", "kubectl top pod -A; MEMORY(bytes)", []string{"namespace", "name"}, nil),
-		containerCPUMillicoresDesc:   prometheus.NewDesc("kubectl_top_pod_container_cpu_millicores", "kubectl top pod -A --containers; CPU(cores)", []string{"namespace", "pod", "name"}, nil),
-		containerMemoryMibibytesDesc: prometheus.NewDesc("kubectl_top_pod_container_memory_mibibytes", "kubectl top pod -A --containers; MEMORY(bytes)", []string{"namespace", "pod", "name"}, nil),
+		podCPUCoresDesc:          prometheus.NewDesc("k8s_top_pod_cpu_cores", "CPU usage of the pod in cores.", []string{"namespace", "name"}, nil),
+		podMemoryBytesDesc:       prometheus.NewDesc("k8s_top_pod_memory_bytes", "Memory usage of the pod in bytes.", []string{"namespace", "name"}, nil),
+		containerCPUCoresDesc:    prometheus.NewDesc("k8s_top_pod_container_cpu_cores", "CPU usage of the container in cores.", []string{"namespace", "pod", "name"}, nil),
+		containerMemoryBytesDesc: prometheus.NewDesc("k8s_top_pod_container_memory_bytes", "Memory usage of the container in bytes.", []string{"namespace", "pod", "name"}, nil),
 	}, nil
 }
 
@@ -72,10 +53,10 @@ func (c *collector) collectNodeMetrics(ch chan<- prometheus.Metric) {
 		return
 	}
 	for _, m := range nodeMetricsList {
-		ch <- prometheus.MustNewConstMetric(c.nodeCPUMillicoresDesc, prometheus.GaugeValue, float64(m.CPUMillicores), []string{m.Name}...)
-		ch <- prometheus.MustNewConstMetric(c.nodeCPUPercentDesc, prometheus.GaugeValue, m.CPUPercent, []string{m.Name}...)
-		ch <- prometheus.MustNewConstMetric(c.nodeMemoryMibibytesDesc, prometheus.GaugeValue, float64(m.MemoryMibibytes), []string{m.Name}...)
-		ch <- prometheus.MustNewConstMetric(c.nodeMemoryPercentDesc, prometheus.GaugeValue, m.MemoryPercent, []string{m.Name}...)
+		ch <- prometheus.MustNewConstMetric(c.nodeCPUCoresDesc, prometheus.GaugeValue, m.CPUCores, []string{m.Name}...)
+		ch <- prometheus.MustNewConstMetric(c.nodeMemoryBytesDesc, prometheus.GaugeValue, float64(m.MemoryBytes), []string{m.Name}...)
+		ch <- prometheus.MustNewConstMetric(c.nodeAllocatableCPUCoresDesc, prometheus.GaugeValue, m.AllocatableCPUCores, []string{m.Name}...)
+		ch <- prometheus.MustNewConstMetric(c.nodeAllocatableMemoryBytesDesc, prometheus.GaugeValue, float64(m.AllocatableMemoryBytes), []string{m.Name}...)
 	}
 }
 
@@ -86,23 +67,24 @@ func (c *collector) collectPodAndContainerMetrics(ch chan<- prometheus.Metric) {
 		return
 	}
 	for _, m := range podAndContainerMetricsList.PodMetricsList {
-		ch <- prometheus.MustNewConstMetric(c.podCPUMillicoresDesc, prometheus.GaugeValue, float64(m.CPUMillicores), []string{m.Namespace, m.Name}...)
-		ch <- prometheus.MustNewConstMetric(c.podMemoryMibibytesDesc, prometheus.GaugeValue, float64(m.MemoryMibibytes), []string{m.Namespace, m.Name}...)
+		ch <- prometheus.MustNewConstMetric(c.podCPUCoresDesc, prometheus.GaugeValue, m.CPUCores, []string{m.Namespace, m.Name}...)
+		ch <- prometheus.MustNewConstMetric(c.podMemoryBytesDesc, prometheus.GaugeValue, float64(m.MemoryBytes), []string{m.Namespace, m.Name}...)
 	}
 	for _, m := range podAndContainerMetricsList.ContainerMetricsList {
-		ch <- prometheus.MustNewConstMetric(c.containerCPUMillicoresDesc, prometheus.GaugeValue, float64(m.CPUMillicores), []string{m.Namespace, m.Pod, m.Name}...)
-		ch <- prometheus.MustNewConstMetric(c.containerMemoryMibibytesDesc, prometheus.GaugeValue, float64(m.MemoryMibibytes), []string{m.Namespace, m.Pod, m.Name}...)
+		ch <- prometheus.MustNewConstMetric(c.containerCPUCoresDesc, prometheus.GaugeValue, m.CPUCores, []string{m.Namespace, m.Pod, m.Name}...)
+		ch <- prometheus.MustNewConstMetric(c.containerMemoryBytesDesc, prometheus.GaugeValue, float64(m.MemoryBytes), []string{m.Namespace, m.Pod, m.Name}...)
 	}
 }
 
 func (c *collector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.nodeCPUMillicoresDesc
-	ch <- c.nodeCPUPercentDesc
-	ch <- c.nodeMemoryMibibytesDesc
-	ch <- c.nodeMemoryPercentDesc
+	ch <- c.nodeCPUCoresDesc
+	ch <- c.nodeMemoryBytesDesc
+	ch <- c.nodeAllocatableCPUCoresDesc
+	ch <- c.nodeAllocatableMemoryBytesDesc
 
-	ch <- c.podCPUMillicoresDesc
-	ch <- c.podMemoryMibibytesDesc
-	ch <- c.containerCPUMillicoresDesc
-	ch <- c.containerMemoryMibibytesDesc
+	ch <- c.podCPUCoresDesc
+	ch <- c.podMemoryBytesDesc
+	ch <- c.containerCPUCoresDesc
+	ch <- c.containerMemoryBytesDesc
 }
+

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/jmnote/kubectl-top-exporter/collector"
+	"github.com/jmnote/k8s-top-exporter/collector"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"

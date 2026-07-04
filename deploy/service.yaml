@@ -3,12 +3,12 @@ kind: Service
 metadata:
   annotations:
     prometheus.io/scrape: "true"
-  name: kubectl-top-exporter
+  name: k8s-top-exporter
   namespace: kube-system
 spec:
   type: ClusterIP
   selector:
-    app: kubectl-top-exporter
+    app: k8s-top-exporter
   ports:
   - port: 9977
     targetPort: 9977

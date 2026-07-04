@@ -1,26 +1,26 @@
 package client
 
 type NodeMetrics struct {
-	Name            string
-	CPUMillicores   int64
-	CPUPercent      float64
-	MemoryMibibytes int64
-	MemoryPercent   float64
+	Name                   string
+	CPUCores               float64
+	MemoryBytes            int64
+	AllocatableCPUCores    float64
+	AllocatableMemoryBytes int64
 }
 
 type PodMetrics struct {
-	Namespace       string
-	Name            string
-	CPUMillicores   int64
-	MemoryMibibytes int64
+	Namespace   string
+	Name        string
+	CPUCores    float64
+	MemoryBytes int64
 }
 
 type ContainerMetrics struct {
-	Namespace       string
-	Pod             string
-	Name            string
-	CPUMillicores   int64
-	MemoryMibibytes int64
+	Namespace   string
+	Pod         string
+	Name        string
+	CPUCores    float64
+	MemoryBytes int64
 }
 
 type PodAndContainerMetricsList struct {

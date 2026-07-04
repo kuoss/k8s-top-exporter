@@ -1,14 +1,14 @@
-FROM golang:1.17-alpine AS build
+FROM golang:1.25-alpine AS build
 WORKDIR /temp/
 COPY . ./
 RUN go mod download
-RUN go build -o /kubectl_top_exporter
+RUN go build -o /k8s-top-exporter
 
-FROM alpine:3.15
-LABEL org.opencontainers.image.source https://github.com/jmnote/kubectl-top-exporter
+FROM gcr.io/distroless/static:nonroot
+LABEL org.opencontainers.image.source https://github.com/jmnote/k8s-top-exporter
 WORKDIR /
-COPY --from=build /kubectl_top_exporter /kubectl_top_exporter
+COPY --from=build /k8s-top-exporter /k8s-top-exporter
 
 EXPOSE     9977
-USER       nobody
-ENTRYPOINT ["/kubectl_top_exporter"]
+USER       nonroot
+ENTRYPOINT ["/k8s-top-exporter"]

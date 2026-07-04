@@ -43,14 +43,14 @@ func (c *Client) getPodMetrics(metrics []metricsapi.PodMetrics) []PodMetrics {
 		for _, container := range m.Containers {
 			containerCPUQuantity := container.Usage[v1.ResourceCPU]
 			containerMemoryQuantity := container.Usage[v1.ResourceMemory]
-			podCPUQuantity += containerCPUQuantity.Value()
+			podCPUQuantity += containerCPUQuantity.MilliValue()
 			podMemoryQuantity += containerMemoryQuantity.Value()
 		}
 		PodMetricsList = append(PodMetricsList, PodMetrics{
-			Namespace:       m.ObjectMeta.Namespace,
-			Name:            m.ObjectMeta.Name,
-			CPUMillicores:   podCPUQuantity,
-			MemoryMibibytes: podMemoryQuantity,
+			Namespace:   m.ObjectMeta.Namespace,
+			Name:        m.ObjectMeta.Name,
+			CPUCores:    float64(podCPUQuantity) / 1000,
+			MemoryBytes: podMemoryQuantity,
 		})
 	}
 	return PodMetricsList
@@ -63,11 +63,11 @@ func (c *Client) getContainerMetrics(metrics []metricsapi.PodMetrics) []Containe
 			cpuQuantity := container.Usage[v1.ResourceCPU]
 			memoryQuantity := container.Usage[v1.ResourceMemory]
 			ContainerMetrics := ContainerMetrics{
-				Namespace:       m.ObjectMeta.Namespace,
-				Pod:             m.ObjectMeta.Name,
-				Name:            container.Name,
-				CPUMillicores:   cpuQuantity.MilliValue(),
-				MemoryMibibytes: memoryQuantity.Value() / (1024 * 1024),
+				Namespace:   m.ObjectMeta.Namespace,
+				Pod:         m.ObjectMeta.Name,
+				Name:        container.Name,
+				CPUCores:    float64(cpuQuantity.MilliValue()) / 1000,
+				MemoryBytes: memoryQuantity.Value(),
 			}
 			ContainerMetricsList = append(ContainerMetricsList, ContainerMetrics)
 		}

@@ -56,11 +56,11 @@ func getNodeMetrics(metrics []metricsapi.NodeMetrics, availableResources map[str
 		memoryQuantity := m.Usage[v1.ResourceMemory]
 		memoryAvailable := available[v1.ResourceMemory]
 		NodeMetricsList = append(NodeMetricsList, NodeMetrics{
-			Name:            m.Name,
-			CPUMillicores:   cpuQuantity.MilliValue(),
-			CPUPercent:      float64(cpuQuantity.MilliValue()) / float64(cpuAvailable.MilliValue()) * 100,
-			MemoryMibibytes: memoryQuantity.Value() / (1024 * 1024),
-			MemoryPercent:   float64(memoryQuantity.MilliValue()) / float64(memoryAvailable.MilliValue()) * 100,
+			Name:                   m.Name,
+			CPUCores:               float64(cpuQuantity.MilliValue()) / 1000,
+			MemoryBytes:            memoryQuantity.Value(),
+			AllocatableCPUCores:    float64(cpuAvailable.MilliValue()) / 1000,
+			AllocatableMemoryBytes: memoryAvailable.Value(),
 		})
 	}
 	return NodeMetricsList
