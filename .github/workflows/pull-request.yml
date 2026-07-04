@@ -19,9 +19,6 @@ jobs:
 
       - name: Setup Go
         uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-          cache: true
 
       - name: Verify formatting
         run: make fmt
