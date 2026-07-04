@@ -35,8 +35,8 @@ It queries the Kubernetes Metrics Server to provide real-time CPU and memory usa
 
 | Metric Name | Type | Labels | Description |
 | :--- | :--- | :--- | :--- |
-| `k8s_top_pod_container_cpu_cores` | Gauge | `namespace`, `pod`, `name` | Current CPU usage of the individual container (unit: Cores) |
-| `k8s_top_pod_container_memory_bytes` | Gauge | `namespace`, `pod`, `name` | Current memory usage of the individual container (unit: Bytes) |
+| `k8s_top_container_cpu_cores` | Gauge | `namespace`, `pod`, `name` | Current CPU usage of the individual container (unit: Cores) |
+| `k8s_top_container_memory_bytes` | Gauge | `namespace`, `pod`, `name` | Current memory usage of the individual container (unit: Bytes) |
 
 ## PromQL Examples
 
@@ -73,6 +73,12 @@ Apply all resources in the `deploy/` directory, which includes the ServiceAccoun
 
 ```bash
 kubectl apply -f deploy/
+```
+
+For local development, run the binary from the command package:
+
+```bash
+go run ./cmd/k8s-top-exporter
 ```
 
 ## License

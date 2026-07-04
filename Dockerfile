@@ -1,8 +1,8 @@
-FROM golang:1.25-alpine AS build
+FROM golang:1.25.0-alpine AS build
 WORKDIR /temp/
 COPY . ./
 RUN go mod download
-RUN go build -o /k8s-top-exporter
+RUN go build -o /k8s-top-exporter ./cmd/k8s-top-exporter
 
 FROM gcr.io/distroless/static:nonroot
 LABEL org.opencontainers.image.source https://github.com/jmnote/k8s-top-exporter
