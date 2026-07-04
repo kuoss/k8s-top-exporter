@@ -10,7 +10,7 @@ import (
 	metricsapi "k8s.io/metrics/pkg/apis/metrics"
 )
 
-func TestGetNodeMetrics(t *testing.T) {
+func TestNodeMetrics(t *testing.T) {
 	t.Parallel()
 
 	metrics := []metricsapi.NodeMetrics{
@@ -41,7 +41,7 @@ func TestGetNodeMetrics(t *testing.T) {
 		},
 	}
 
-	got := getNodeMetrics(metrics, available)
+	got := nodeMetrics(metrics, available)
 	want := []NodeMetrics{
 		{
 			Name:                   "node-a",
@@ -60,6 +60,6 @@ func TestGetNodeMetrics(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("getNodeMetrics() = %#v, want %#v", got, want)
+		t.Fatalf("nodeMetrics() = %#v, want %#v", got, want)
 	}
 }

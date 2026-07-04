@@ -13,15 +13,15 @@ type stubTopClient struct {
 	podMetrics  *topclient.PodAndContainerMetricsList
 }
 
-func (s stubTopClient) GetNodeMetricsList() ([]topclient.NodeMetrics, error) {
+func (s stubTopClient) NodeMetricsList() ([]topclient.NodeMetrics, error) {
 	return s.nodeMetrics, nil
 }
 
-func (s stubTopClient) GetPodAndContainerMetricsList() (*topclient.PodAndContainerMetricsList, error) {
+func (s stubTopClient) PodAndContainerMetricsList() (*topclient.PodAndContainerMetricsList, error) {
 	return s.podMetrics, nil
 }
 
-func TestCollectorCollectsExpectedMetrics(t *testing.T) {
+func TestCollector(t *testing.T) {
 	t.Parallel()
 
 	c := &Collector{
@@ -61,8 +61,8 @@ func TestCollectorCollectsExpectedMetrics(t *testing.T) {
 		nodeAllocatableMemoryBytesDesc: prometheus.NewDesc("k8s_top_node_allocatable_memory_bytes", "Allocatable memory of the node in bytes.", []string{"name"}, nil),
 		podCPUCoresDesc:                prometheus.NewDesc("k8s_top_pod_cpu_cores", "CPU usage of the pod in cores.", []string{"namespace", "name"}, nil),
 		podMemoryBytesDesc:             prometheus.NewDesc("k8s_top_pod_memory_bytes", "Memory usage of the pod in bytes.", []string{"namespace", "name"}, nil),
-		containerCPUCoresDesc:          prometheus.NewDesc("k8s_top_pod_container_cpu_cores", "CPU usage of the container in cores.", []string{"namespace", "pod", "name"}, nil),
-		containerMemoryBytesDesc:       prometheus.NewDesc("k8s_top_pod_container_memory_bytes", "Memory usage of the container in bytes.", []string{"namespace", "pod", "name"}, nil),
+		containerCPUCoresDesc:          prometheus.NewDesc("k8s_top_container_cpu_cores", "CPU usage of the container in cores.", []string{"namespace", "pod", "name"}, nil),
+		containerMemoryBytesDesc:       prometheus.NewDesc("k8s_top_container_memory_bytes", "Memory usage of the container in bytes.", []string{"namespace", "pod", "name"}, nil),
 	}
 
 	reg := prometheus.NewRegistry()
@@ -81,8 +81,8 @@ func TestCollectorCollectsExpectedMetrics(t *testing.T) {
 	assertGauge(t, families, "k8s_top_node_allocatable_memory_bytes", map[string]string{"name": "node-a"}, 4096)
 	assertGauge(t, families, "k8s_top_pod_cpu_cores", map[string]string{"namespace": "default", "name": "pod-a"}, 0.75)
 	assertGauge(t, families, "k8s_top_pod_memory_bytes", map[string]string{"namespace": "default", "name": "pod-a"}, 2048)
-	assertGauge(t, families, "k8s_top_pod_container_cpu_cores", map[string]string{"namespace": "default", "pod": "pod-a", "name": "c1"}, 0.25)
-	assertGauge(t, families, "k8s_top_pod_container_memory_bytes", map[string]string{"namespace": "default", "pod": "pod-a", "name": "c1"}, 512)
+	assertGauge(t, families, "k8s_top_container_cpu_cores", map[string]string{"namespace": "default", "pod": "pod-a", "name": "c1"}, 0.25)
+	assertGauge(t, families, "k8s_top_container_memory_bytes", map[string]string{"namespace": "default", "pod": "pod-a", "name": "c1"}, 512)
 }
 
 func assertGauge(t *testing.T, families []*dto.MetricFamily, name string, labels map[string]string, want float64) {

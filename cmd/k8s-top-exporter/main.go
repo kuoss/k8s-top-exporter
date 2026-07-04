@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	metricCollector, err := collector.NewCollector()
+	metricCollector, err := collector.New()
 	if err != nil {
 		log.Fatalf("initialize collector: %v", err)
 	}

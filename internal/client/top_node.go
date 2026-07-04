@@ -10,8 +10,8 @@ import (
 	metricsv1beta1api "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
 
-func (c *Client) GetNodeMetricsList() ([]NodeMetrics, error) {
-	metrics, err := c.getNodeMetricsFromMetricsAPI()
+func (c *Client) NodeMetricsList() ([]NodeMetrics, error) {
+	metrics, err := c.nodeMetricsFromAPI()
 	if err != nil {
 		return nil, err
 	}
@@ -30,11 +30,11 @@ func (c *Client) GetNodeMetricsList() ([]NodeMetrics, error) {
 		allocatable[n.Name] = n.Status.Allocatable
 	}
 
-	NodeMetricsList := getNodeMetrics(metrics.Items, allocatable)
+	NodeMetricsList := nodeMetrics(metrics.Items, allocatable)
 	return NodeMetricsList, nil
 }
 
-func (c *Client) getNodeMetricsFromMetricsAPI() (*metricsapi.NodeMetricsList, error) {
+func (c *Client) nodeMetricsFromAPI() (*metricsapi.NodeMetricsList, error) {
 	versionedMetrics, err := c.metricsClient.MetricsV1beta1().NodeMetricses().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (c *Client) getNodeMetricsFromMetricsAPI() (*metricsapi.NodeMetricsList, er
 	return metrics, nil
 }
 
-func getNodeMetrics(metrics []metricsapi.NodeMetrics, availableResources map[string]v1.ResourceList) []NodeMetrics {
+func nodeMetrics(metrics []metricsapi.NodeMetrics, availableResources map[string]v1.ResourceList) []NodeMetrics {
 	var NodeMetricsList []NodeMetrics
 	for _, m := range metrics {
 		available := availableResources[m.Name]

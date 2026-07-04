@@ -17,7 +17,7 @@ type Client struct {
 	nodeClient    corev1client.CoreV1Interface
 }
 
-func NewClient() (*Client, error) {
+func New() (*Client, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -30,15 +30,15 @@ func NewClient() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewClientWith(clientset, metricsClient)
+	return newWith(clientset, metricsClient)
 }
 
-func NewClientWith(clientset kubernetes.Interface, metricsClient metricsclientset.Interface) (*Client, error) {
+func newWith(clientset kubernetes.Interface, metricsClient metricsclientset.Interface) (*Client, error) {
 	apiGroups, err := clientset.Discovery().ServerGroups()
 	if err != nil {
 		return nil, err
 	}
-	if !SupportedMetricsAPIVersionAvailable(apiGroups) {
+	if !supportsMetricsAPIVersion(apiGroups) {
 		return nil, errors.New("Metrics API not available")
 	}
 
@@ -48,7 +48,7 @@ func NewClientWith(clientset kubernetes.Interface, metricsClient metricsclientse
 	}, nil
 }
 
-func SupportedMetricsAPIVersionAvailable(discoveredAPIGroups *metav1.APIGroupList) bool {
+func supportsMetricsAPIVersion(discoveredAPIGroups *metav1.APIGroupList) bool {
 	supportedMetricsAPIVersions := []string{"v1beta1"}
 	for _, discoveredAPIGroup := range discoveredAPIGroups.Groups {
 		if discoveredAPIGroup.Name != metricsapi.GroupName {

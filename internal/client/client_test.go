@@ -9,7 +9,7 @@ import (
 	metricsfake "k8s.io/metrics/pkg/client/clientset/versioned/fake"
 )
 
-func TestSupportedMetricsAPIVersionAvailable(t *testing.T) {
+func TestMetricsAPIVersion(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -66,14 +66,14 @@ func TestSupportedMetricsAPIVersionAvailable(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got := SupportedMetricsAPIVersionAvailable(tt.groups); got != tt.expected {
-				t.Fatalf("SupportedMetricsAPIVersionAvailable() = %v, want %v", got, tt.expected)
+			if got := supportsMetricsAPIVersion(tt.groups); got != tt.expected {
+				t.Fatalf("supportsMetricsAPIVersion() = %v, want %v", got, tt.expected)
 			}
 		})
 	}
 }
 
-func TestNewClientWith(t *testing.T) {
+func TestClientNew(t *testing.T) {
 	t.Parallel()
 
 	kubeClient := k8sfake.NewSimpleClientset()
@@ -86,16 +86,16 @@ func TestNewClientWith(t *testing.T) {
 
 	metricsClient := metricsfake.NewSimpleClientset()
 
-	c, err := NewClientWith(kubeClient, metricsClient)
+	c, err := newWith(kubeClient, metricsClient)
 	if err != nil {
-		t.Fatalf("NewClientWith() unexpected error: %v", err)
+		t.Fatalf("newWith() unexpected error: %v", err)
 	}
 	if c == nil {
-		t.Fatal("NewClientWith() returned nil client")
+		t.Fatal("newWith() returned nil client")
 	}
 }
 
-func TestNewClientWithRejectsMissingMetricsAPI(t *testing.T) {
+func TestClientNewRejectsMissingMetricsAPI(t *testing.T) {
 	t.Parallel()
 
 	kubeClient := k8sfake.NewSimpleClientset()
@@ -108,8 +108,8 @@ func TestNewClientWithRejectsMissingMetricsAPI(t *testing.T) {
 
 	metricsClient := metricsfake.NewSimpleClientset()
 
-	_, err := NewClientWith(kubeClient, metricsClient)
+	_, err := newWith(kubeClient, metricsClient)
 	if err == nil {
-		t.Fatal("NewClientWith() error = nil, want error")
+		t.Fatal("newWith() error = nil, want error")
 	}
 }

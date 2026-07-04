@@ -9,18 +9,18 @@ import (
 	metricsv1beta1api "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
 
-func (c *Client) GetPodAndContainerMetricsList() (*PodAndContainerMetricsList, error) {
-	metrics, err := c.getPodMetricsFromMetricsAPI()
+func (c *Client) PodAndContainerMetricsList() (*PodAndContainerMetricsList, error) {
+	metrics, err := c.podMetricsFromAPI()
 	if err != nil {
 		return nil, err
 	}
 	return &PodAndContainerMetricsList{
-		PodMetricsList:       c.getPodMetrics(metrics.Items),
-		ContainerMetricsList: c.getContainerMetrics(metrics.Items),
+		PodMetricsList:       c.podMetrics(metrics.Items),
+		ContainerMetricsList: c.containerMetrics(metrics.Items),
 	}, nil
 }
 
-func (c *Client) getPodMetricsFromMetricsAPI() (*metricsapi.PodMetricsList, error) {
+func (c *Client) podMetricsFromAPI() (*metricsapi.PodMetricsList, error) {
 	versionedMetrics, err := c.metricsClient.MetricsV1beta1().PodMetricses(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (c *Client) getPodMetricsFromMetricsAPI() (*metricsapi.PodMetricsList, erro
 	return metrics, nil
 }
 
-func (c *Client) getPodMetrics(metrics []metricsapi.PodMetrics) []PodMetrics {
+func (c *Client) podMetrics(metrics []metricsapi.PodMetrics) []PodMetrics {
 	var PodMetricsList []PodMetrics
 	var podCPUQuantity int64
 	var podMemoryQuantity int64
@@ -56,7 +56,7 @@ func (c *Client) getPodMetrics(metrics []metricsapi.PodMetrics) []PodMetrics {
 	return PodMetricsList
 }
 
-func (c *Client) getContainerMetrics(metrics []metricsapi.PodMetrics) []ContainerMetrics {
+func (c *Client) containerMetrics(metrics []metricsapi.PodMetrics) []ContainerMetrics {
 	var ContainerMetricsList []ContainerMetrics
 	for _, m := range metrics {
 		for _, container := range m.Containers {

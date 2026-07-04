@@ -10,7 +10,7 @@ import (
 	metricsapi "k8s.io/metrics/pkg/apis/metrics"
 )
 
-func TestGetPodMetrics(t *testing.T) {
+func TestPodMetrics(t *testing.T) {
 	t.Parallel()
 
 	metrics := []metricsapi.PodMetrics{
@@ -38,7 +38,7 @@ func TestGetPodMetrics(t *testing.T) {
 		},
 	}
 
-	got := (&Client{}).getPodMetrics(metrics)
+	got := (&Client{}).podMetrics(metrics)
 	want := []PodMetrics{
 		{
 			Namespace:   "default",
@@ -49,11 +49,11 @@ func TestGetPodMetrics(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("getPodMetrics() = %#v, want %#v", got, want)
+		t.Fatalf("podMetrics() = %#v, want %#v", got, want)
 	}
 }
 
-func TestGetContainerMetrics(t *testing.T) {
+func TestContainerMetrics(t *testing.T) {
 	t.Parallel()
 
 	metrics := []metricsapi.PodMetrics{
@@ -81,7 +81,7 @@ func TestGetContainerMetrics(t *testing.T) {
 		},
 	}
 
-	got := (&Client{}).getContainerMetrics(metrics)
+	got := (&Client{}).containerMetrics(metrics)
 	want := []ContainerMetrics{
 		{
 			Namespace:   "default",
@@ -100,6 +100,6 @@ func TestGetContainerMetrics(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("getContainerMetrics() = %#v, want %#v", got, want)
+		t.Fatalf("containerMetrics() = %#v, want %#v", got, want)
 	}
 }
