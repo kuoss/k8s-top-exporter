@@ -3,12 +3,17 @@ package collector
 import (
 	"log"
 
-	topclient "github.com/jmnote/k8s-top-exporter/client"
+	topclient "github.com/jmnote/k8s-top-exporter/internal/client"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type collector struct {
-	topclient *topclient.Client
+type TopClient interface {
+	GetNodeMetricsList() ([]topclient.NodeMetrics, error)
+	GetPodAndContainerMetricsList() (*topclient.PodAndContainerMetricsList, error)
+}
+
+type Collector struct {
+	topclient TopClient
 
 	nodeCPUCoresDesc               *prometheus.Desc
 	nodeMemoryBytesDesc            *prometheus.Desc
@@ -21,13 +26,14 @@ type collector struct {
 	containerMemoryBytesDesc *prometheus.Desc
 }
 
-func NewCollector() (*collector, error) {
-	topclient, err := topclient.NewClient()
+func NewCollector() (*Collector, error) {
+	topClient, err := topclient.NewClient()
 	if err != nil {
 		return nil, err
 	}
-	return &collector{
-		topclient: topclient,
+
+	return &Collector{
+		topclient: topClient,
 
 		nodeCPUCoresDesc:               prometheus.NewDesc("k8s_top_node_cpu_cores", "CPU usage of the node in cores.", []string{"name"}, nil),
 		nodeMemoryBytesDesc:            prometheus.NewDesc("k8s_top_node_memory_bytes", "Memory usage of the node in bytes.", []string{"name"}, nil),
@@ -41,12 +47,12 @@ func NewCollector() (*collector, error) {
 	}, nil
 }
 
-func (c *collector) Collect(ch chan<- prometheus.Metric) {
+func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	c.collectNodeMetrics(ch)
 	c.collectPodAndContainerMetrics(ch)
 }
 
-func (c *collector) collectNodeMetrics(ch chan<- prometheus.Metric) {
+func (c *Collector) collectNodeMetrics(ch chan<- prometheus.Metric) {
 	nodeMetricsList, err := c.topclient.GetNodeMetricsList()
 	if err != nil {
 		log.Println(err)
@@ -60,7 +66,7 @@ func (c *collector) collectNodeMetrics(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (c *collector) collectPodAndContainerMetrics(ch chan<- prometheus.Metric) {
+func (c *Collector) collectPodAndContainerMetrics(ch chan<- prometheus.Metric) {
 	podAndContainerMetricsList, err := c.topclient.GetPodAndContainerMetricsList()
 	if err != nil {
 		log.Println(err)
@@ -76,7 +82,7 @@ func (c *collector) collectPodAndContainerMetrics(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (c *collector) Describe(ch chan<- *prometheus.Desc) {
+func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.nodeCPUCoresDesc
 	ch <- c.nodeMemoryBytesDesc
 	ch <- c.nodeAllocatableCPUCoresDesc
@@ -87,4 +93,3 @@ func (c *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.containerCPUCoresDesc
 	ch <- c.containerMemoryBytesDesc
 }
-

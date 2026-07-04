@@ -75,6 +75,12 @@ Apply all resources in the `deploy/` directory, which includes the ServiceAccoun
 kubectl apply -f deploy/
 ```
 
+For local development, run the binary from the command package:
+
+```bash
+go run ./cmd/k8s-top-exporter
+```
+
 ## License
 
 This project is licensed under the [Apache License 2.0](LICENSE).

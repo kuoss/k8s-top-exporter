@@ -26,9 +26,15 @@ func NewClient() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodeClient := clientset.CoreV1()
+	metricsClient, err := metricsclientset.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return NewClientWith(clientset, metricsClient)
+}
 
-	apiGroups, err := clientset.DiscoveryClient.ServerGroups()
+func NewClientWith(clientset kubernetes.Interface, metricsClient metricsclientset.Interface) (*Client, error) {
+	apiGroups, err := clientset.Discovery().ServerGroups()
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +42,8 @@ func NewClient() (*Client, error) {
 		return nil, errors.New("Metrics API not available")
 	}
 
-	metricsClient, err := metricsclientset.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
 	return &Client{
-		nodeClient:    nodeClient,
+		nodeClient:    clientset.CoreV1(),
 		metricsClient: metricsClient,
 	}, nil
 }

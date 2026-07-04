@@ -1,0 +1,33 @@
+name: pull-request
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Verify formatting
+        run: make fmt
+
+      - name: Run tests
+        run: make test
+
+      - name: Build container image
+        run: make docker
